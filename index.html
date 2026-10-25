@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acidentes Radiológicos — Césio-137 e Chernobyl</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Share+Tech+Mono&display=swap">
+<style>
+/* ===== Tokens ===== */
+:root{--y:#ffd400;--g:#39ff88;--r:#ff3b30;--bg:#0a0a0a;--p:#111;--p2:#1a1a1a;--t:#e8e8e8;--m:#8a8a8a;--ln:#2a2a2a;color-scheme:dark;box-sizing:border-box}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--t);font:16px/1.45 'Share Tech Mono',ui-monospace,Consolas,monospace;overflow:hidden}
+h1,h2,.hd{font-family:Oswald,Impact,'Arial Narrow',sans-serif;text-transform:uppercase;letter-spacing:.04em}
+/* grain + scanlines */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(var(--ln) 1px,transparent 1px),linear-gradient(90deg,var(--ln) 1px,transparent 1px);background-size:48px 48px;opacity:.35}
+/* nav */
+#nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;gap:4px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 6px) 14px 6px;background:rgba(10,10,10,.92);border-bottom:1px solid var(--ln);font-size:12px}
+#nav b{color:var(--y);margin-right:10px;letter-spacing:.1em}
+#nav button{background:none;border:1px solid transparent;color:var(--m);font:inherit;padding:4px 8px;cursor:pointer}
+#nav button.on{color:var(--y);border-color:var(--y)}
+#nav .sp{flex:1}
+#nav .act{border-color:var(--ln);color:var(--t)}
+#bar{position:fixed;left:0;bottom:0;height:3px;background:var(--y);z-index:30;width:0;transition:width .4s;box-shadow:0 0 8px var(--y)}
+body.pres #nav{transform:translateY(-100%)}
+body.pres .s{padding-top:30px}
+body.pres .s{font-size:1.12em}
+body.op #nav{display:none}
+/* slides */
+.s{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;gap:16px;padding:calc(env(safe-area-inset-top,0px) + 64px) 5vw 44px;z-index:1;overflow:auto}
+.s.on{display:flex;animation:in .6s ease}
+@keyframes in{from{opacity:0;transform:scale(.985);filter:blur(4px)}}
+.k{color:var(--y);font-size:12px;letter-spacing:.25em}
+.k::before{content:"▮ "}
+h1{font-size:clamp(30px,5vw,68px);line-height:1;font-weight:700}
+h2{font-size:clamp(24px,3.4vw,46px);line-height:1.05;font-weight:700}
+h2 em,h1 em{font-style:normal;color:var(--y)}
+.sub{color:var(--m);max-width:70ch}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:stretch}
+.row>*{flex:1 1 260px}
+.box{background:var(--p);border:1px solid var(--ln);padding:16px;position:relative}
+.box::before{content:"";position:absolute;left:-1px;top:-1px;width:14px;height:14px;border-left:2px solid var(--y);border-top:2px solid var(--y)}
+.box h3{font-family:Oswald,sans-serif;text-transform:uppercase;color:var(--y);font-size:18px;margin-bottom:6px;letter-spacing:.05em}
+.hl{color:var(--y)}.gr{color:var(--g)}.rd{color:var(--r)}.mu{color:var(--m)}
+.chip{display:inline-block;border:1px solid var(--ln);padding:4px 10px;margin:3px;font-size:13px;background:var(--p2)}
+.btn{background:var(--p2);color:var(--t);border:1px solid var(--y);font:inherit;padding:10px 16px;cursor:pointer;text-transform:uppercase;letter-spacing:.1em}
+.btn:hover,.btn.on{background:var(--y);color:#000}
+.st{opacity:0;transform:translateY(14px);transition:.5s;pointer-events:none}
+.st.v{opacity:1;transform:none;pointer-events:auto}
+.src{font-size:11px;color:var(--m);border-top:1px dashed var(--ln);padding-top:6px;margin-top:8px}
+.glow{filter:drop-shadow(0 0 10px rgba(255,212,0,.55))}
+.pulse{animation:pl 2.4s ease-in-out infinite}
+@keyframes pl{50%{opacity:.45}}
+.hud{position:absolute;right:5vw;top:70px;text-align:right;font-size:11px;color:var(--m);letter-spacing:.2em}
+.hud i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin-right:6px;animation:pl 1.2s infinite;box-shadow:0 0 8px var(--g)}
+/* abertura */
+#s0{align-items:center;text-align:center;justify-content:center}
+#cv{position:absolute;inset:0;z-index:-1}
+#s0 .tf{width:min(26vh,200px);animation:tfin 4s ease both}
+@keyframes tfin{from{opacity:0;transform:scale(.6) rotate(-60deg)}}
+#cnt{font-size:13px;color:var(--g);letter-spacing:.3em}
+#s0 .q{font-size:20px;color:var(--m);animation:in 3s 2s both}
+/* fluxos */
+.flow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.flow .box{flex:1 1 150px;text-align:center}
+.flow .ar{color:var(--y);font-size:22px;flex:0 0 auto}
+/* átomo e penetração */
+.track{position:relative;height:90px;background:var(--p);border:1px solid var(--ln);overflow:hidden}
+.track .ray{position:absolute;left:0;top:50%;height:6px;margin-top:-3px;width:0;transition:width 1.2s ease;box-shadow:0 0 12px currentColor;background:currentColor}
+.track .bar{position:absolute;top:0;bottom:0;width:14px;display:flex;align-items:flex-end;justify-content:center}
+.track .bar span{position:absolute;bottom:2px;font-size:10px;color:var(--m);white-space:nowrap;transform:translateX(0)}
+.track .bar i{position:absolute;inset:0;opacity:.55}
+.orb{transform-origin:150px 150px;animation:rot 7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.clk{cursor:pointer}
+/* tabelas */
+table{border-collapse:collapse;width:100%;font-size:14px}
+td,th{border:1px solid var(--ln);padding:7px 10px;text-align:left;vertical-align:top}
+th{color:var(--y);font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.06em}
+td:first-child{color:var(--g);width:16%}
+input[type=range]{width:100%;accent-color:#ffd400}
+/* timeline */
+#tl{display:flex;gap:6px}
+#tl button{flex:1;height:10px;background:var(--ln);border:0;cursor:pointer;padding:0}
+#tl button.d{background:var(--y);box-shadow:0 0 8px var(--y)}
+#tlbox{min-height:210px;display:flex;gap:24px;align-items:center}
+#tlg{font-size:90px;animation:pl 3s infinite}
+/* notas */
+#notes{position:fixed;left:0;right:0;bottom:3px;z-index:40;background:rgba(17,17,17,.96);border-top:1px solid var(--y);padding:10px 5vw;font-size:14px;display:none}
+#notes.on{display:block}
+.ok::before{content:"✔ ";color:var(--g)}
+/* telas altas rolam sem cortar o topo */
+.s{justify-content:flex-start}.s>:first-child{margin-top:auto}.s>:last-child{margin-bottom:auto}
+.orb:hover{animation-play-state:paused}
+.ar{opacity:0;transition:.5s}.st.v+.ar{opacity:1}
+/* transições */
+#wipe{position:fixed;inset:0;z-index:45;pointer-events:none;display:flex;align-items:center;justify-content:center;background:#0a0a0a;font-size:clamp(28px,6vw,84px);clip-path:inset(0 0 0 100%)}
+#wipe.sm{animation:wp .55s ease both}#wipe.big{animation:wp 1.2s ease both}
+@keyframes wp{0%{clip-path:inset(0 100% 0 0)}35%,60%{clip-path:inset(0)}100%{clip-path:inset(0 0 0 100%)}}
+.s.on::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--y);box-shadow:0 0 18px var(--y);animation:scan 1.4s ease-out both;pointer-events:none;z-index:5}
+@keyframes scan{from{top:0;opacity:.9}to{top:100%;opacity:0}}
+#rx3 canvas{display:block}#rx3{overflow:hidden;border:1px solid var(--ln);background:#0d0d0d}
+@media(max-width:700px){#nav button{padding:3px 4px;font-size:10px}.hud{display:none}}
+</style>
+</head>
+<body>
+<!-- símbolo de radiação (trifólio) reutilizável -->
+<svg width="0" height="0" style="position:absolute"><defs>
+<path id="bl" d="M-40 -69.28A80 80 0 0 1 40 -69.28L10 -17.32A20 20 0 0 0 -10 -17.32Z"/>
+<g id="tf"><use href="#bl" fill="#ffd400"/><use href="#bl" fill="#ffd400" transform="rotate(120)"/><use href="#bl" fill="#ffd400" transform="rotate(240)"/><circle r="11" fill="#ffd400"/></g>
+</defs></svg>
+
+<div id="nav"></div><div id="bar"></div>
+<div id="notes"></div><div id="wipe"></div>
+
+<!-- ============ 0 ABERTURA ============ -->
+<section class="s" id="s0" data-sec="0" data-p="1" data-n="Abertura. Dizer o tema, os dois casos e a pergunta central: como algo invisível pode ter consequências tão concretas?">
+<canvas id="cv"></canvas>
+<div class="hud"><i></i>RADIATION MONITORING<br>HAZARD · CAUTION</div>
+<svg class="tf glow" viewBox="-90 -90 180 180"><use href="#tf"/></svg>
+<div id="cnt">DOSE 0.000 µSv/h · SIMULAÇÃO DECORATIVA</div>
+<h1>Acidentes <em>radiológicos</em></h1>
+<div class="hd" style="font-size:22px">Césio-137 • Goiânia &nbsp;|&nbsp; Chernobyl • Ucrânia</div>
+<div class="q">Quando o invisível se torna um risco.</div>
+<div><button class="btn" id="go">Iniciar apresentação</button> <button class="btn" id="go2">Tela cheia</button></div>
+</section>
+
+<!-- ============ 1 O QUE É RADIAÇÃO ============ -->
+<section class="s" data-sec="1" data-p="1" data-n="Radiação = energia emitida e propagada como ondas ou partículas. Clicar no núcleo (alfa), no elétron (beta) e na onda (gama). Mostrar até onde cada uma chega.">
+<div class="k">01 · INTRODUÇÃO</div>
+<h2>Radiação: <em>o que é?</em></h2>
+<p class="sub">Energia emitida e propagada na forma de ondas ou partículas. Clique no átomo para ver cada tipo.</p>
+<div class="row">
+<svg id="atom" viewBox="0 0 300 300" style="max-height:44vh">
+<circle cx="150" cy="150" r="100" fill="none" stroke="#2a2a2a" stroke-dasharray="3 5"/>
+<g class="orb"><circle class="clk" data-r="b" cx="250" cy="150" r="9" fill="#39ff88"/><circle class="clk" data-r="b" cx="250" cy="150" r="26" fill="transparent"/></g>
+<g class="clk" data-r="a"><circle cx="150" cy="150" r="30" fill="#1a1a1a" stroke="#ffd400"/><circle cx="142" cy="144" r="9" fill="#ffd400"/><circle cx="158" cy="146" r="9" fill="#ffd400"/><circle cx="148" cy="160" r="9" fill="#8a8a8a"/><circle cx="160" cy="158" r="9" fill="#8a8a8a"/></g>
+<path class="clk" data-r="g" d="M185 150q10-22 20 0t20 0t20 0" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 4"><animate attributeName="stroke-dashoffset" to="-20" dur="1s" repeatCount="indefinite"/></path>
+<path class="clk" data-r="g" d="M185 150q10-22 20 0t20 0t20 0" fill="none" stroke="transparent" stroke-width="32"/>
+<text x="150" y="292" fill="#8a8a8a" font-size="11" text-anchor="middle">α núcleo · β elétron · γ onda</text>
+</svg>
+<div>
+<div style="margin-bottom:10px"><button class="btn" data-r="a">α Alfa</button> <button class="btn" data-r="b">β Beta</button> <button class="btn" data-r="g">γ Gama</button></div>
+<div class="box"><h3 id="rn">Selecione α, β ou γ</h3><ul id="rt" style="padding-left:18px"></ul></div>
+<div class="track" style="margin-top:14px" id="trk">
+<div class="bar" style="left:30%"><i style="background:#ccc"></i><span>PAPEL</span></div>
+<div class="bar" style="left:55%"><i style="background:#8a8a8a"></i><span>ALUMÍNIO</span></div>
+<div class="bar" style="left:78%;width:26px"><i style="background:#4a5568"></i><span>CHUMBO / CONCRETO</span></div>
+<div class="ray" id="ray"></div></div>
+<div class="src">Penetração ilustrativa (não é escala física).</div>
+</div></div>
+</section>
+
+<!-- ============ 2 IONIZANTE ============ -->
+<section class="s" data-sec="2" data-p="2" data-n="Radiação ionizante tem energia suficiente para arrancar elétrons de átomos. Seguir o fluxo. Explicar que o efeito depende de vários fatores, não só da 'quantidade'.">
+<div class="k">02 · RADIAÇÃO IONIZANTE</div>
+<h2>Do átomo à <em>célula</em></h2>
+<div class="flow">
+<div class="box st"><h3>Radiação</h3>energia atinge a matéria</div><div class="ar st">▶</div>
+<div class="box st"><h3>Ionização</h3>elétrons são removidos dos átomos</div><div class="ar st">▶</div>
+<div class="box st"><h3>Alteração molecular</h3>ligações químicas quebradas; radicais livres (ex.: da água)</div><div class="ar st">▶</div>
+<div class="box st"><h3>Dano celular</h3>DNA e outras estruturas afetadas</div><div class="ar st">▶</div>
+<div class="box st"><h3>Efeitos biológicos</h3>reparo, morte celular ou mutação</div>
+</div>
+<div class="st"><div class="k">OS EFEITOS DEPENDEM DE</div>
+<span class="chip">dose</span><span class="chip">taxa de dose</span><span class="chip">tipo de radiação</span><span class="chip">tempo de exposição</span><span class="chip">distância</span><span class="chip">tecido atingido</span><span class="chip">exposição externa ou interna</span></div>
+<p class="sub st">Doses altas em pouco tempo → efeitos agudos (determinísticos). Doses baixas → aumento de probabilidade de efeitos tardios, como câncer (estocásticos).</p>
+</section>
+
+<!-- ===== MEDIDAS E ESCALA DE DOSE ===== -->
+<section class="s" data-sec="2" data-p="2" data-n="Três unidades: Bq mede a fonte, Gy a energia absorvida, Sv o efeito biológico estimado. Clicar nos marcadores da escala (logarítmica). Valores típicos e aproximados.">
+<div class="k">02 · MEDINDO A RADIAÇÃO</div>
+<h2>Becquerel, Gray e <em>Sievert</em></h2>
+<div class="row"><div class="box st"><h3>Bq · Becquerel</h3>atividade: desintegrações por segundo de uma fonte</div><div class="box st"><h3>Gy · Gray</h3>dose absorvida: energia depositada por quilo de matéria</div><div class="box st"><h3>Sv · Sievert</h3>dose efetiva: considera o tipo de radiação e a sensibilidade dos tecidos</div></div>
+<div class="track" id="ds" style="height:84px"></div>
+<div class="box" id="di">Clique em um marcador (escala logarítmica, valores aproximados).</div>
+<div class="src">UNSCEAR; ICRP. Valores típicos e aproximados.</div>
+</section>
+
+<!-- ============ 3 IRRADIAÇÃO x CONTAMINAÇÃO ============ -->
+<section class="s" data-sec="2" data-p="2" data-n="Essa distinção é a chave para Goiânia. Irradiado: sofreu exposição, não carrega material. Contaminado: material radioativo sobre ou dentro do corpo, e pode contaminar outros.">
+<div class="k">02 · CONCEITO-CHAVE</div>
+<h2>Irradiação <em>≠</em> Contaminação</h2>
+<div class="row">
+<div class="box"><h3>Irradiação</h3>
+<svg viewBox="0 0 300 140" width="100%"><rect x="12" y="50" width="40" height="40" fill="#1a1a1a" stroke="#ffd400"/><use href="#tf" transform="translate(32 70) scale(.2)"/>
+<g stroke="#ffd400" stroke-dasharray="4 4" fill="none"><path d="M56 60L200 60"><animate attributeName="stroke-dashoffset" to="-16" dur="1s" repeatCount="indefinite"/></path><path d="M56 70L200 70"><animate attributeName="stroke-dashoffset" to="-16" dur="1s" repeatCount="indefinite"/></path><path d="M56 80L200 80"><animate attributeName="stroke-dashoffset" to="-16" dur="1s" repeatCount="indefinite"/></path></g>
+<circle cx="230" cy="40" r="14" fill="none" stroke="#e8e8e8" stroke-width="2"/><rect x="214" y="58" width="32" height="60" rx="10" fill="none" stroke="#e8e8e8" stroke-width="2"/></svg>
+A radiação atinge a pessoa a partir de uma fonte externa. <b class="hl">Não há material radioativo no corpo</b>; ao sair do alcance, a exposição cessa. A pessoa irradiada não torna outros radioativos.</div>
+<div class="box"><h3>Contaminação</h3>
+<svg viewBox="0 0 300 140" width="100%"><circle cx="150" cy="40" r="14" fill="none" stroke="#e8e8e8" stroke-width="2"/><rect x="134" y="58" width="32" height="60" rx="10" fill="none" stroke="#e8e8e8" stroke-width="2"/>
+<g fill="#39ff88"><circle class="pulse" cx="140" cy="70" r="3"/><circle class="pulse" cx="158" cy="64" r="3"/><circle class="pulse" cx="150" cy="95" r="3"/><circle class="pulse" cx="143" cy="108" r="3"/><circle class="pulse" cx="156" cy="82" r="3"/><circle class="pulse" cx="150" cy="38" r="3"/></g>
+<text x="190" y="75" fill="#39ff88" font-size="11">material sobre/dentro</text></svg>
+Material radioativo <b class="hl">depositado sobre (externa) ou dentro (interna) do organismo</b>, por inalação, ingestão ou ferimentos. Continua irradiando enquanto estiver lá e pode ser espalhado.</div>
+</div>
+<div class="box st"><b class="hl">Em Goiânia:</b> o pó de cloreto de césio contaminou pessoas, casas e objetos, e por isso houve irradiação e contaminação ao mesmo tempo.</div>
+</section>
+
+<!-- ============ 4 PROTEÇÃO ============ -->
+<section class="s" data-sec="3" data-p="2" data-n="Três princípios: tempo, distância, blindagem. Mexer nos sliders e mostrar a dose relativa caindo. Lei do inverso do quadrado vale para fonte pontual em condições ideais. Modelo didático.">
+<div class="k">03 · PROTEÇÃO RADIOLÓGICA</div>
+<h2><em>Tempo</em> · <em>Distância</em> · <em>Blindagem</em></h2>
+<div class="row">
+<div class="box"><h3>⏱ Tempo</h3>Menos tempo de exposição → menor dose tende a ser recebida.<input type="range" id="rt1" min="1" max="60" value="10"><div class="mu" id="v1"></div></div>
+<div class="box"><h3>📏 Distância</h3>Fonte pontual: intensidade cai ≈ 1/d² (em certas condições).<input type="range" id="rd1" min="1" max="10" value="1"><div class="mu" id="v2"></div></div>
+<div class="box"><h3>🛡 Blindagem</h3>Materiais adequados reduzem a exposição (aqui, cada camada corta à metade — ilustrativo).<input type="range" id="rb1" min="0" max="5" value="0"><div class="mu" id="v3"></div></div>
+</div>
+<div class="track" style="height:110px"><svg viewBox="0 0 800 110" width="100%" height="100%" preserveAspectRatio="none" style="position:absolute;inset:0"><g id="pf"></g></svg></div>
+<div class="box"><span class="k">DOSE RELATIVA (referência: 10 min a 1 m, sem blindagem = 100%)</span><div style="font-size:42px" class="hl" id="dose">100%</div><div style="height:8px;background:var(--ln)"><div id="db" style="height:8px;background:var(--g);width:100%;transition:.3s"></div></div></div>
+</section>
+
+<!-- ============ 5 CÉSIO-137 ============ -->
+<section class="s" data-sec="4" data-p="3" data-n="Goiânia, setembro de 1987. Cs-137: radioisótopo, emissor beta com gama associada, meia-vida cerca de 30 anos. Usado em fontes de teleterapia, que exigem controle rigoroso por décadas.">
+<div class="k">04 · GOIÂNIA, 1987</div>
+<h1>Goiânia, <em>1987</em></h1>
+<div class="hd" style="font-size:22px;color:var(--m)">O acidente com o Césio-137</div>
+<div class="row">
+<svg class="glow" viewBox="-90 -90 180 180" style="max-height:34vh"><use href="#tf"/></svg>
+<div class="box" style="flex:2 1 380px"><h3>Painel técnico · Cs-137</h3>
+<table><tr><td>Número atômico</td><td>55 (metal alcalino)</td></tr>
+<tr><td>Tipo</td><td>radioisótopo (artificial)</td></tr>
+<tr><td>Emissão</td><td>beta (β⁻) + gama associada (via Ba-137m)</td></tr>
+<tr><td>Meia-vida</td><td>≈ 30 anos</td></tr>
+<tr><td>Fonte de 1987</td><td>50,9 TBq (1.375 Ci)</td></tr>
+<tr><td>Uso</td><td>fontes de teleterapia (radioterapia)</td></tr>
+<tr><td>Forma em Goiânia</td><td>cloreto de césio, pó fino e solúvel</td></tr></table>
+<div class="src">Fontes: IAEA (1988); CNEN.</div></div></div>
+<p class="sub st">Uma fonte com meia-vida de décadas segue perigosa por muito tempo: por isso exige controle rigoroso, inventário e destinação final segura.</p>
+</section>
+
+<!-- ============ 6 TIMELINE ============ -->
+<section class="s" id="stl" data-sec="4" data-p="3" data-n="Avançar uma etapa por clique/seta. Falar de cada etapa em 20-30 segundos. Números de referência: IAEA (1988).">
+<div class="k">04 · LINHA DO TEMPO</div>
+<h2>Como o acidente <em>aconteceu</em></h2>
+<div id="tl"></div>
+<div class="box" id="tlbox"><div id="tlg"></div><div><div class="k" id="tln"></div><h2 id="tlt" style="font-size:30px"></h2><p id="tlx" style="font-size:18px;max-width:60ch"></p></div></div>
+</section>
+
+<!-- ============ 7 ESPALHA ============ -->
+<section class="s" id="smap" data-sec="4" data-p="3" data-n="Avançar: 1 fonte, 2 contaminação (contato, objetos, roupas, pessoas, ambientes), 3 exposição. Esquema ilustrativo, NÃO é mapa geográfico.">
+<div class="k">04 · A CONTAMINAÇÃO SE ESPALHA</div>
+<h2>Fonte → Contaminação → <em>Exposição</em></h2>
+<svg viewBox="0 0 700 300" width="100%" style="max-height:50vh">
+<g id="m1" opacity="0" style="transition:.8s"><circle cx="120" cy="150" r="34" fill="#1a1a1a" stroke="#ffd400" stroke-width="2"/><use href="#tf" transform="translate(120 150) scale(.3)"/><text x="120" y="205" fill="#ffd400" font-size="12" text-anchor="middle">FONTE</text></g>
+<g id="m2" opacity="0" style="transition:.8s" stroke="#39ff88" stroke-dasharray="5 5" fill="none"><path d="M150 140L330 70"/><path d="M155 150L340 150"/><path d="M150 165L330 235"/><path d="M360 70L540 110"/><path d="M360 235L540 200"/>
+<g stroke="none" fill="#1a1a1a"><circle cx="350" cy="70" r="22" stroke="#39ff88" stroke-width="2"/><circle cx="350" cy="150" r="22" stroke="#39ff88" stroke-width="2"/><circle cx="350" cy="235" r="22" stroke="#39ff88" stroke-width="2"/></g>
+<g stroke="none" fill="#39ff88" font-size="11" text-anchor="middle"><text x="350" y="40">objetos</text><text x="350" y="190">roupas / mãos</text><text x="350" y="282">ambientes</text></g></g>
+<g id="m3" opacity="0" style="transition:.8s"><circle cx="560" cy="110" r="22" fill="none" stroke="#ff3b30" stroke-width="2"/><circle cx="560" cy="200" r="22" fill="none" stroke="#ff3b30" stroke-width="2"/><circle cx="560" cy="155" r="70" fill="none" stroke="#ff3b30" stroke-dasharray="3 6"><animate attributeName="r" values="60;75;60" dur="3s" repeatCount="indefinite"/></circle><text x="560" y="290" fill="#ff3b30" font-size="12" text-anchor="middle">PESSOAS EXPOSTAS</text></g>
+</svg>
+<div class="box" id="mcap">Pressione → para iniciar</div>
+<div class="src">Esquema didático; não representa dados geográficos exatos.</div>
+</section>
+
+<!-- ============ 8 PESSOAS ============ -->
+<section class="s" data-sec="4" data-p="3" data-n="Falar com responsabilidade, sem imagens chocantes. Distinguir externa e interna. Número: 4 mortes nas primeiras semanas (IAEA, 1988); 249 contaminadas.">
+<div class="k">04 · O QUE ACONTECEU COM AS PESSOAS?</div>
+<h2>Efeitos da <em>exposição</em></h2>
+<div class="row">
+<svg viewBox="0 0 160 300" style="max-height:48vh;flex:0 1 200px"><circle cx="80" cy="36" r="24" fill="none" stroke="#e8e8e8" stroke-width="2"/><path d="M40 70h80l10 110h-24l-6 100h-20l-4-70-4 70h-20l-6-100h-24z" fill="none" stroke="#e8e8e8" stroke-width="2"/>
+<g class="clk pz" data-z="ext"><circle cx="50" cy="110" r="14" fill="rgba(255,212,0,.3)" stroke="#ffd400"/></g>
+<g class="clk pz" data-z="int"><circle cx="80" cy="105" r="16" fill="rgba(57,255,136,.25)" stroke="#39ff88"/></g>
+<g class="clk pz" data-z="med"><circle cx="80" cy="150" r="14" fill="rgba(255,59,48,.25)" stroke="#ff3b30"/></g></svg>
+<div style="flex:2 1 380px"><div>
+<button class="btn on" data-e="ext">Contaminação externa</button> <button class="btn" data-e="int">Contaminação interna</button> <button class="btn" data-e="ag">Efeitos agudos</button> <button class="btn" data-e="lp">Longo prazo</button> <button class="btn" data-e="ac">Acompanhamento</button></div>
+<div class="box" style="margin-top:12px;min-height:150px;font-size:18px" id="pe"></div></div></div>
+</section>
+
+<!-- ============ 9 DESCONTAMINAÇÃO ============ -->
+<section class="s" data-sec="4" data-p="3" data-n="Arrastar o controle de Antes para Depois. A descontaminação gera muito resíduo, que precisa ser tratado e armazenado com segurança.">
+<div class="k">04 · DESCONTAMINAÇÃO</div>
+<h2>Antes → Intervenção → <em>Depois</em></h2>
+<div class="row"><div>
+<div class="track" style="height:240px"><svg id="dz" viewBox="0 0 400 240" width="100%" height="100%" preserveAspectRatio="none"></svg></div>
+<input type="range" id="dr" min="0" max="100" value="0"><div class="mu" id="dl">ANTES: área contaminada</div></div>
+<div class="box"><h3>Etapas</h3><div class="ok">isolamento da área</div><div class="ok">monitoramento radiológico</div><div class="ok">identificação de materiais contaminados</div><div class="ok">descontaminação e retirada</div><div class="ok">gerenciamento de rejeitos</div><div class="ok">monitoramento das pessoas afetadas</div>
+<div class="src">A IAEA registra cerca de 3.500 m³ de rejeitos radioativos gerados (IAEA, 1988): descontaminar gera muito resíduo.</div></div></div>
+</section>
+
+<!-- ============ 10 CHERNOBYL ============ -->
+<section class="s" data-sec="5" data-p="4" data-n="Transição: um outro tipo de acidente. Não foi só 'o reator explodiu': projeto, teste, condições operacionais e cultura de segurança (INSAG-7).">
+<div class="k">05 · UM OUTRO TIPO DE ACIDENTE</div>
+<h1>Chernobyl — <em>1986</em></h1>
+<div><span class="chip">26 de abril de 1986</span><span class="chip">Usina de Chernobyl, perto de Pripyat (URSS, hoje Ucrânia)</span><span class="chip">Reator 4 · tipo RBMK</span></div>
+<div class="row">
+<div class="box st"><h3>Projeto</h3>RBMK: moderador de grafite, refrigeração a água; instabilidade em baixa potência (coeficiente de vazio positivo).</div>
+<div class="box st"><h3>Teste</h3>Teste de segurança com a turbina durante o desligamento programado.</div>
+<div class="box st"><h3>Operação</h3>Reator em baixa potência e condições instáveis; sistemas de proteção desativados.</div>
+<div class="box st"><h3>Cultura de segurança</h3>Falhas de procedimento, comunicação e preparo, além de limitações do projeto.</div></div>
+<div class="src">INSAG-7 (IAEA, 1992); OECD/NEA (2002).</div>
+</section>
+
+<!-- ============ 11 REATOR ============ -->
+<section class="s" data-sec="5" data-p="4" data-n="Clicar nas partes. Representação simplificada, não é planta real.">
+<div class="k">05 · VISUALIZAÇÃO DO REATOR 4</div>
+<h2>Como funciona um <em>RBMK</em></h2>
+<div class="row"><div id="rx3" style="flex:2 1 420px;height:52vh;min-height:300px"></div><svg id="rx" viewBox="0 0 400 300" style="display:none">
+<rect class="clk" data-p="est" x="40" y="30" width="320" height="250" fill="#111" stroke="#8a8a8a" stroke-width="3"/>
+<rect class="clk" data-p="nuc" x="100" y="90" width="200" height="130" fill="#2a2a2a" stroke="#ffd400"/>
+<g class="clk" data-p="comb" stroke="#39ff88" stroke-width="6"><path d="M130 100v110M165 100v110M200 100v110M235 100v110M270 100v110"/></g>
+<g class="clk" data-p="bar" stroke="#e8e8e8" stroke-width="3"><path d="M147 40v75M217 40v75M252 40v75"/></g>
+<path class="clk" data-p="ref" d="M60 250h280" stroke="#4aa3ff" stroke-width="8"/>
+<path class="clk" data-p="vap" d="M200 90v-50h90" stroke="#bbb" stroke-width="5" fill="none" stroke-dasharray="6 5"><animate attributeName="stroke-dashoffset" to="-22" dur="1s" repeatCount="indefinite"/></path>
+<text x="200" y="165" fill="#ffd400" font-size="11" text-anchor="middle">NÚCLEO</text></svg>
+<div class="box"><h3 id="rxt">Clique em uma parte</h3><p id="rxx"></p><button class="btn" id="sim" style="margin-top:12px">▶ Simular acidente</button></div></div>
+<div class="src">Ilustração simplificada, sem escala nem fidelidade arquitetônica.</div>
+</section>
+
+<!-- ============ 12 SEQUÊNCIA ============ -->
+<section class="s" data-sec="5" data-p="4" data-n="Uma etapa por clique. Fonte: INSAG-7 e UNSCEAR. Duas explosões em sequência, depois incêndio de grafite e liberação por vários dias.">
+<div class="k">05 · SEQUÊNCIA DO ACIDENTE</div>
+<h2>Da decisão à <em>dispersão</em></h2>
+<div class="flow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+<div class="box st">① TESTE na turbina</div><div class="box st">② ALTERAÇÕES nas condições do reator</div><div class="box st">③ AUMENTO de potência</div><div class="box st">④ DANOS ao reator</div><div class="box st rd">⑤ EXPLOSÕES</div><div class="box st rd">⑥ INCÊNDIO</div><div class="box st rd">⑦ LIBERAÇÃO de material radioativo</div><div class="box st rd">⑧ DISPERSÃO na atmosfera</div></div>
+</section>
+
+<!-- ============ 13 DISPERSÃO ============ -->
+<section class="s" data-sec="5" data-p="4" data-n="Representação didática, NÃO é previsão. O material foi levado pela atmosfera; a deposição foi irregular, dependendo do vento e da chuva. Houve detecção na Suécia (Forsmark) e monitoramento internacional.">
+<div class="k">05 · DISPERSÃO</div>
+<h2>O material <em>não ficou</em> na usina</h2>
+<div class="row"><svg viewBox="0 0 600 340" style="max-height:52vh">
+<path d="M180 330L150 250 170 190 120 150 160 90 230 70 300 20 380 40 420 90 470 80 520 130 480 180 500 240 440 300 330 280 280 330Z" fill="#111" stroke="#8a8a8a"/>
+<g fill="none" stroke="#ffd400"><circle cx="400" cy="190" r="10"><animate attributeName="r" values="10;150" dur="6s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="6s" repeatCount="indefinite"/></circle>
+<ellipse cx="400" cy="190" rx="10" ry="6" transform="rotate(-35 400 190)"><animate attributeName="rx" values="10;220" dur="7s" repeatCount="indefinite"/><animate attributeName="ry" values="6;70" dur="7s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="7s" repeatCount="indefinite"/></ellipse></g>
+<circle cx="400" cy="190" r="6" fill="#ff3b30"/><text x="410" y="210" fill="#ff3b30" font-size="12">Chernobyl</text>
+<text x="20" y="330" fill="#8a8a8a" font-size="11">Silhueta ilustrativa · não é previsão meteorológica</text></svg>
+<div class="box"><h3>Como se espalha</h3><div class="ok">atmosfera: o material é levado em altitude</div><div class="ok">vento: define a direção</div><div class="ok">deposição: chuva e gravidade levam ao solo</div><div class="ok">contaminação irregular, em “manchas”</div><div class="ok">monitoramento internacional detectou o evento</div></div></div>
+</section>
+
+<!-- ===== CHERNOBYL: DEPOIS ===== -->
+<section class="s" data-sec="5" data-p="4" data-n="Depois das explosões: evacuar, descobrir, conter. A Suécia detectou o aumento de radioatividade antes do anúncio oficial. Fontes: IAEA, UNSCEAR.">
+<div class="k">05 · DEPOIS DO ACIDENTE</div>
+<h2>Das primeiras horas aos <em>anos seguintes</em></h2>
+<div class="row">
+<div class="box st"><h3>26/04/1986</h3>Explosões e incêndio no Reator 4.</div>
+<div class="box st"><h3>27/04</h3>Evacuação de Pripyat.</div>
+<div class="box st"><h3>28/04</h3>Radioatividade elevada detectada na Suécia (usina de Forsmark) revela o acidente fora da URSS.</div></div>
+<div class="row">
+<div class="box st"><h3>1986</h3>Cobertura provisional sobre o reator e zona de exclusão de 30 km.</div>
+<div class="box st"><h3>1986</h3>Cerca de 116.000 pessoas evacuadas; mais ~220.000 realocadas depois (UNSCEAR).</div>
+<div class="box st"><h3>2016</h3>Novo confinamento (New Safe Confinement) posicionado sobre o reator.</div></div>
+<div class="src">IAEA; UNSCEAR; WNA.</div>
+</section>
+
+<!-- ============ 14 COMPARAÇÃO ============ -->
+<section class="s" data-sec="6" data-p="4" data-n="Não são acidentes idênticos: Goiânia = fonte médica abandonada (radiológico); Chernobyl = reator (nuclear). INES: Goiânia nível 5, Chernobyl nível 7 (IAEA).">
+<div class="k">06 · COMPARAÇÃO</div>
+<h2>Goiânia <em>×</em> Chernobyl</h2>
+<table><tr><th></th><th>Goiânia (1987)</th><th>Chernobyl (1986)</th></tr>
+<tr class="st"><td>Origem</td><td>Fonte de radioterapia abandonada</td><td>Usina nuclear, Reator 4</td></tr>
+<tr class="st"><td>Tipo de fonte</td><td>Cs-137 selado (cloreto de césio)</td><td>Combustível nuclear e produtos de fissão</td></tr>
+<tr class="st"><td>Tipo de acidente</td><td>Radiológico</td><td>Nuclear (reator)</td></tr>
+<tr class="st"><td>Escala</td><td>Local; INES nível 5</td><td>Regional/internacional; INES nível 7</td></tr>
+<tr class="st"><td>Exposição</td><td>Contato, ingestão, proximidade da fonte</td><td>Irradiação, inalação, alimentos</td></tr>
+<tr class="st"><td>Contaminação</td><td>Casas, objetos, solo na cidade</td><td>Vastas áreas; vários países</td></tr>
+<tr class="st"><td>Impacto humano</td><td>249 contaminados; 4 mortes iniciais</td><td>28 mortes por síndrome aguda; evacuações</td></tr>
+<tr class="st"><td>Impacto ambiental</td><td>Pontual, com remoção de solo</td><td>Zona de exclusão e solos contaminados</td></tr>
+<tr class="st"><td>Resposta</td><td>Triagem em massa, remoção, repositório</td><td>Combate ao incêndio, evacuação, cobertura</td></tr>
+<tr class="st"><td>Lições</td><td>Controle e rastreio de fontes</td><td>Projeto seguro e cultura de segurança</td></tr></table>
+<div class="src">IAEA (1988); UNSCEAR (2008); WHO (2006).</div>
+</section>
+
+<!-- ============ 15 CONSEQUÊNCIAS ============ -->
+<section class="s" data-sec="7" data-p="4" data-n="Escolher o painel e alternar curto/longo prazo. Números com fonte: IAEA 1988; UNSCEAR 2008; WHO 2006.">
+<div class="k">07 · CONSEQUÊNCIAS</div>
+<h2>Curto e <em>longo</em> prazo</h2>
+<div><button class="btn on" data-c="h">👥 Humanas</button> <button class="btn" data-c="a">🌱 Ambientais</button> <button class="btn" data-c="s">🏙️ Sociais</button> <button class="btn" data-c="t">⚙️ Tecnológicas</button> &nbsp; <button class="btn" id="cterm">Curto prazo</button></div>
+<div class="row"><div class="box" style="font-size:18px;min-height:190px" id="cg"><h3>Goiânia</h3><div id="cgt"></div></div><div class="box" style="font-size:18px" id="cc"><h3>Chernobyl</h3><div id="cct"></div></div></div>
+<div class="src">Fontes: IAEA (1988); UNSCEAR (2008); WHO (2006); IAEA, Convenções de 1986.</div>
+</section>
+
+<!-- ============ 16 LIÇÕES ============ -->
+<section class="s" data-sec="7" data-p="4" data-n="Relatório de segurança: nove lições. Uma frase por item.">
+<div class="k">07 · O QUE APRENDEMOS?</div>
+<h2>Relatório de <em>segurança</em></h2>
+<div class="row" style="gap:10px"><div class="box ok st">controle rigoroso de fontes radioativas</div><div class="box ok st">rastreamento e inventário</div><div class="box ok st">treinamento</div><div class="box ok st">comunicação de emergência</div><div class="box ok st">monitoramento</div><div class="box ok st">fiscalização</div><div class="box ok st">cultura de segurança</div><div class="box ok st">preparação para acidentes</div><div class="box ok st">responsabilidade no uso da tecnologia</div></div>
+</section>
+
+<!-- ===== FÍSICA × QUÍMICA × BIOLOGIA ===== -->
+<section class="s" data-sec="7" data-p="4" data-n="Fechar a parte científica mostrando como as três disciplinas explicam os dois acidentes.">
+<div class="k">07 · TRÊS CIÊNCIAS, UM FENÔMENO</div>
+<h2>Física · Química · <em>Biologia</em></h2>
+<div class="row">
+<div class="box st"><h3>⚛ Física</h3>Decaimento e meia-vida (Cs-137 ≈ 30 anos); radiação ionizante; 1/d² e blindagem; fissão e controle de nêutrons no reator.</div>
+<div class="box st"><h3>⚗ Química</h3>Isótopos; o césio é metal alcalino e o cloreto de césio é solúvel e se espalha fácil; o iodo-131 se concentra na tireoide; azul da Prússia ajuda a eliminar césio do corpo.</div>
+<div class="box st"><h3>🧬 Biologia</h3>Ionização do DNA, reparo e morte celular; tecidos de rápida divisão são mais sensíveis; o césio se comporta como o potássio no organismo.</div></div>
+</section>
+
+<!-- ============ 17 CONCLUSÃO ============ -->
+<section class="s" data-sec="8" data-p="4" data-n="Retomar a pergunta central e responder. Fechar com a frase final.">
+<div class="k">08 · CONCLUSÃO</div>
+<div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap"><svg class="glow pulse" viewBox="-90 -90 180 180" style="width:140px"><use href="#tf"/></svg>
+<div><h1>Radiação não é <em>sinônimo de perigo.</em></h1><p class="hd" style="font-size:22px;color:var(--m)">O risco depende da fonte, da dose, da exposição e do controle.</p></div></div>
+<div class="row"><div class="box st"><h3>Goiânia</h3>“Uma fonte médica fora de controle.”</div><div class="box st"><h3>Chernobyl</h3>“Um acidente nuclear de grande escala.”</div></div>
+<div class="box st"><b class="hl">Como algo invisível pode produzir consequências tão concretas?</b> Porque a radiação ionizante interage com a matéria e com tecidos vivos; quando fontes radioativas ou instalações nucleares não são bem controladas, os efeitos podem ultrapassar o indivíduo e atingir comunidades e ambientes.</div>
+<div class="hd st hl" style="font-size:26px;text-align:center">Conhecimento científico + prevenção + segurança</div>
+</section>
+
+<!-- ============ 18 REFERÊNCIAS ============ -->
+<section class="s" data-sec="8" data-p="4" data-n="Conferir os números nas fontes antes de apresentar.">
+<div class="k">FONTES E REFERÊNCIAS</div>
+<h2>Fontes e <em>referências</em></h2>
+<div class="box" style="font-size:14px"><div class="ok">IAEA. <i>The Radiological Accident in Goiânia</i>. Viena, 1988.</div><div class="ok">IAEA / INSAG. <i>INSAG-7: The Chernobyl Accident: Updating of INSAG-1</i>. 1992.</div><div class="ok">UNSCEAR. <i>Sources and Effects of Ionizing Radiation, Vol. II, Annex D</i> (Chernobyl). 2008.</div><div class="ok">WHO. <i>Health Effects of the Chernobyl Accident and Special Health Care Programmes</i>. 2006.</div><div class="ok">OECD/NEA. <i>Chernobyl: Assessment of Radiological and Health Impacts</i>. 2002.</div><div class="ok">UNSCEAR. <i>Evaluation of data on thyroid cancer in regions affected by the Chernobyl accident</i> (White Paper). 2018.</div><div class="ok">Governo de Goiás, Saúde: <i>História do Césio 137 em Goiânia</i> (dados do relatório da IAEA).</div><div class="ok">CNEN (Comissão Nacional de Energia Nuclear): material institucional sobre o acidente de Goiânia e proteção radiológica.</div><div class="ok">IAEA. <i>International Nuclear and Radiological Event Scale (INES)</i>.</div></div>
+<div class="src">Números de Goiânia e Chernobyl conferidos em consulta a IAEA/Gov. de Goiás, UNSCEAR e WHO em out/2026; cite sempre a fonte original.</div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ===== utilitários ===== */
+const $=(q,e=document)=>e.querySelector(q),$$=(q,e=document)=>[...e.querySelectorAll(q)];
+$$('.ar.st').forEach(e=>e.classList.remove('st'));const S=$$('.s');let i=0;
+const SEC=['','01 INTRODUÇÃO','02 RADIAÇÃO','03 PROTEÇÃO','04 GOIÂNIA','05 CHERNOBYL','06 COMPARAÇÃO','07 CONSEQUÊNCIAS','08 CONCLUSÃO'];
+
+/* ===== navegação por etapas (progressiva) ===== */
+S.forEach(s=>{const st=$$('.st',s);s._max=st.length;s._set=k=>st.forEach((e,j)=>e.classList.toggle('v',j<k))});
+function show(n,end){const o=i;i=Math.max(0,Math.min(S.length-1,n));const ii=i,sc=ii>0&&ii!=o&&S[ii].dataset.sec!=S[o].dataset.sec;if(ii!=o||ii==0)wipe(sc?SEC[S[ii].dataset.sec]:'');setTimeout(()=>S.forEach((s,k)=>s.classList.toggle('on',k==ii)),sc?420:200);
+ const s=S[i];s._k=end?s._max:0;s._set(s._k);document.body.classList.toggle('op',i==0);
+ $$('#nav [data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s==s.dataset.sec));
+ $('#bar').style.width=(i/(S.length-1)*100)+'%';
+ $('#notes').innerHTML='<b class="hl">APRESENTADOR '+s.dataset.p+'</b> — '+s.dataset.n}
+function next(){const s=S[i];if(s._k<s._max){s._set(++s._k)}else show(i+1)}
+function prev(){const s=S[i];if(s._k>0){s._set(--s._k)}else show(i-1,true)}
+/* barra de navegação */
+$('#nav').innerHTML='<b>☢ RAD</b>'+SEC.slice(1).map((t,k)=>`<button data-s="${k+1}">${t}</button>`).join('')+'<span class="sp"></span><button class="act" id="bn">NOTAS</button><button class="act" id="bp">APRESENTAR</button>';
+$$('#nav [data-s]').forEach(b=>b.onclick=()=>show(S.findIndex(s=>s.dataset.sec==b.dataset.s)));
+function pres(on){document.body.classList.toggle('pres',on);if(on&&!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});if(!on&&document.fullscreenElement)document.exitFullscreen?.()}
+$('#bp').onclick=()=>pres(!document.body.classList.contains('pres'));
+$('#bn').onclick=()=>$('#notes').classList.toggle('on');
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)document.body.classList.remove('pres')});
+addEventListener('keydown',e=>{
+ if(e.key=='ArrowRight'||e.key==' '){e.preventDefault();document.activeElement.blur();next()}
+ else if(e.key=='ArrowLeft'||e.key=='f'||e.key=='F'){prev()}
+ else if(e.key=='Escape'){pres(false)}
+ else if(e.key=='n'||e.key=='N'){$('#notes').classList.toggle('on')}});
+$('#go').onclick=()=>show(1);$('#go2').onclick=()=>pres(true);
+document.addEventListener('pointerup',()=>{const a=document.activeElement;if(a&&a.type=='range')a.blur()});
+
+/* ===== abertura: partículas e contador ===== */
+(function(){const c=$('#cv'),x=c.getContext('2d');let P=[];
+ function rs(){c.width=innerWidth;c.height=innerHeight;P=Array.from({length:70},()=>({x:Math.random()*c.width,y:Math.random()*c.height,v:.4+Math.random()*1.4}))}
+ rs();addEventListener('resize',rs);
+ (function f(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.v;if(p.x>c.width){p.x=0;p.y=Math.random()*c.height}x.fillStyle='rgba(255,212,0,.5)';x.fillRect(p.x,p.y,2,2);x.fillStyle='rgba(255,212,0,.08)';x.fillRect(p.x-30*p.v,p.y,30*p.v,1)});requestAnimationFrame(f)})();
+ let d=0;setInterval(()=>{d=Math.max(0,d+(Math.random()-.4)*.05);$('#cnt').textContent='DOSE '+d.toFixed(3)+' µSv/h · SIMULAÇÃO DECORATIVA'},400)})();
+
+/* ===== átomo: alfa, beta, gama ===== */
+const R={a:{n:'ALFA (α)',c:'#ffd400',w:28,t:['Partículas (2 prótons + 2 nêutrons)','Menor poder de penetração: barrada por papel ou pela pele','Perigosa se o material emissor entra no organismo']},
+b:{n:'BETA (β)',c:'#39ff88',w:52,t:['Partículas (elétrons ou pósitrons)','Maior penetração que a alfa: parada por alumínio','Atinge a pele; também preocupa se for inalada ou ingerida']},
+g:{n:'GAMA (γ)',c:'#ffffff',w:100,t:['Radiação eletromagnética (sem massa)','Alto poder de penetração','Exige blindagem adequada: chumbo, concreto']}};
+$$('#atom .clk,.btn[data-r]').forEach(e=>e.onclick=()=>{const r=R[e.dataset.r];$('#rn').textContent=r.n;$('#rn').style.color=r.c;$('#rt').innerHTML=r.t.map(t=>'<li>'+t+'</li>').join('');const y=$('#ray');y.style.color=r.c;y.style.transition='none';y.style.width='0';y.offsetWidth;y.style.transition='';y.style.width=r.w+'%'});
+
+/* ===== proteção: sliders ===== */
+function upd(){const t=+$('#rt1').value,d=+$('#rd1').value,b=+$('#rb1').value;
+ const dose=100*(t/10)/(d*d)*Math.pow(.5,b);$('#dose').textContent=dose.toFixed(dose<10?1:0)+'%';$('#db').style.width=Math.min(100,dose)+'%';$('#db').style.background=dose>100?'#ff3b30':'#39ff88';
+ $('#v1').textContent=t+' min de exposição';$('#v2').textContent=d+' m da fonte';$('#v3').textContent=b+' camada(s)';
+ const px=60+d*70;$('#pf').innerHTML=`<rect x="10" y="35" width="36" height="40" fill="#1a1a1a" stroke="#ffd400"/><use href="#tf" transform="translate(28 55) scale(.18)"/>`+
+ (b?`<rect x="${Math.min(px-30,60+d*35)}" y="10" width="${6+b*4}" height="90" fill="#4a5568"/>`:'')+
+ `<circle cx="${px}" cy="40" r="10" fill="none" stroke="#e8e8e8" stroke-width="2"/><rect x="${px-9}" y="52" width="18" height="40" rx="6" fill="none" stroke="#e8e8e8" stroke-width="2"/>`+
+ `<path d="M48 55H${px-14}" stroke="#ffd400" stroke-dasharray="4 4" opacity="${Math.max(.15,1/(d*d)*Math.pow(.5,b))}"/>`}
+['rt1','rd1','rb1'].forEach(k=>$('#'+k).oninput=upd);upd();
+
+/* ===== timeline de Goiânia ===== */
+const T=[['Clínica abandonada','Em 1985 o Instituto Goiano de Radioterapia mudou de sede; o prédio antigo ficou abandonado.','🏚️'],
+['Equipamento permanece','Um aparelho de teleterapia com fonte de Cs-137 foi deixado no local, sem destinação adequada.','🩻'],
+['Equipamento retirado','Em 13/09/1987, duas pessoas retiraram o cabeçote do prédio, sem saber o que ele continha.','📦'],
+['Fonte aberta','Em 18/09, a cápsula foi aberta em uma casa; surgiu um pó que brilhava em azul no escuro.','🔧'],
+['Material manipulado','O pó chamou atenção e passou a ser tocado e mostrado como curiosidade.','✨'],
+['Distribuição','Fragmentos circularam entre casas, um ferro-velho e familiares: por contato, roupas e objetos.','🏘️'],
+['Surgem sintomas','Náuseas, vômitos, diarreia, tontura e lesões na pele, de início sem causa reconhecida.','🤒'],
+['Identificação','Em 29/09, um fragmento levado à vigilância sanitária foi reconhecido como radioativo; a CNEN foi acionada.','🔎'],
+['Área isolada','Locais isolados; 112.800 pessoas monitoradas em um estádio de futebol, de 30/09 a 21/12/1987 (IAEA, 1988).','🚧'],
+['Descontaminação','Remoção de solo e materiais, demolições; 3.500 m³ de rejeitos, hoje em repositório em Abadia de Goiás (IAEA; Gov. de Goiás).','🧹'],
+['Consequências','249 com contaminação significativa (120 só em roupas e calçados); 4 mortes no primeiro mês; acompanhamento de longo prazo.','📋']];
+$('#tl').innerHTML=T.map((_,j)=>`<button data-j="${j}"></button>`).join('');
+function tl(j){const t=T[j];$$('#tl button').forEach((b,k)=>b.classList.toggle('d',k<=j));$('#tlg').textContent=t[2];$('#tln').textContent='ETAPA '+(j+1)+' / 11';$('#tlt').textContent=t[0];$('#tlx').textContent=t[1]}
+const stl=$('#stl');stl._max=T.length-1;stl._set=k=>tl(k);
+$$('#tl button').forEach(b=>b.onclick=()=>{stl._k=+b.dataset.j;stl._set(stl._k)});
+
+/* ===== mapa esquemático ===== */
+const cap=['Pressione → para iniciar','FONTE: o material radioativo (Cs-137) é o ponto de origem.','CONTAMINAÇÃO: o pó se desloca por contato, objetos, roupas, pessoas e ambientes.','EXPOSIÇÃO: pessoas recebem radiação da fonte e do material depositado.'];
+const sm=$('#smap');sm._max=3;sm._set=k=>{['m1','m2','m3'].forEach((id,j)=>$('#'+id).setAttribute('opacity',k>j?1:0));$('#mcap').textContent=cap[k]};
+
+/* ===== pessoas ===== */
+const E={ext:['Contaminação externa','Material sobre a pele e roupas: irradia continuamente e pode ser espalhado. Remover roupas e lavar reduz a dose.'],
+int:['Contaminação interna','Material inalado, ingerido ou absorvido: irradia por dentro e pode se fixar em tecidos até ser eliminado.'],
+ag:['Efeitos agudos','Doses altas: náuseas, vômitos, queda de glóbulos, lesões de pele. Em Goiânia, 4 mortes nas primeiras semanas (IAEA, 1988).'],
+lp:['Longo prazo','Doses menores podem aumentar a probabilidade de câncer anos depois; o risco é estatístico, não individual.'],
+ac:['Acompanhamento médico','Exames periódicos, tratamento de lesões e apoio psicológico das pessoas afetadas.'],med:['Medula óssea','Tecido sensível: doses altas reduzem a produção de células do sangue.']};
+function pe(k){$('#pe').innerHTML='<h3>'+E[k][0]+'</h3>'+E[k][1];$$('[data-e]').forEach(b=>b.classList.toggle('on',b.dataset.e==k))}
+$$('[data-e]').forEach(b=>b.onclick=()=>pe(b.dataset.e));$$('.pz').forEach(g=>g.onclick=()=>pe(g.dataset.z));pe('ext');
+
+/* ===== descontaminação ===== */
+const D=Array.from({length:70},(_,j)=>({x:10+Math.random()*380,y:10+Math.random()*220,j}));
+$('#dz').innerHTML='<rect width="400" height="240" fill="#151515"/>'+D.map(d=>`<circle class="dd" data-j="${d.j}" cx="${d.x}" cy="${d.y}" r="5" fill="#39ff88" style="transition:.4s"/>`).join('');
+$('#dr').oninput=e=>{const v=+e.target.value;$$('.dd').forEach(c=>c.style.opacity=(+c.dataset.j/70<(100-v)/100)?1:0);$('#dl').textContent=v<5?'ANTES: área contaminada':v<95?'INTERVENÇÃO: remoção e monitoramento':'DEPOIS: níveis reduzidos (resíduos armazenados)'};
+
+/* ===== reator ===== */
+const X={est:['Estrutura','Edificação e blindagem em torno do reator e do circuito de refrigeração.'],
+nuc:['Núcleo','Bloco de grafite (moderador) com canais verticais; ali ocorre a fissão.'],
+comb:['Combustível','Urânio em canais; a fissão gera calor e produtos de fissão radioativos.'],
+bar:['Barras de controle','Absorvem nêutrons para regular a potência; no RBMK, a inserção das barras tinha limitações de projeto.'],
+ref:['Refrigeração','Água circula nos canais retirando calor; se falha, a temperatura sobe.'],
+vap:['Vapor','A água ferve nos canais; o vapor aciona as turbinas. Em baixa potência, mais vapor aumenta a reatividade (coeficiente de vazio positivo).']};
+$$('#rx .clk').forEach(e=>e.onclick=()=>{$('#rxt').textContent=X[e.dataset.p][0];$('#rxx').textContent=X[e.dataset.p][1]});
+
+/* ===== consequências ===== */
+const C={h:[['4 mortes nas primeiras semanas; 249 pessoas contaminadas (IAEA, 1988).','Acompanhamento médico e psicológico de longo prazo.'],['134 com síndrome aguda de radiação; 28 mortes em cerca de 3 meses (UNSCEAR).','Câncer de tireoide é o principal efeito tardio: cerca de 5.000 casos ligados ao iodo-131 no leite (UNSCEAR, 2018).']],
+a:[['Solo, casas e objetos contaminados na cidade; remoção e demolições.','Rejeitos armazenados em repositório, sob monitoramento.'],['Áreas de exclusão e contaminação de solos e vegetação.','Cs-137 (meia-vida ≈ 30 anos) persiste por décadas em partes do ambiente.']],
+s:[['Medo e estigma contra vítimas e a região.','Reconstrução da confiança e apoio às famílias.'],['Evacuação de cerca de 116 mil pessoas em 1986 (IAEA).','Reassentamentos e impactos psicológicos duradouros (WHO).']],
+t:[['Resposta de emergência e monitoramento em massa.','Normas mais rígidas para controle de fontes.'],['Convenções internacionais de notificação precoce e assistência (1986).','Mudanças de projeto e segurança nos reatores RBMK.']]};
+let ck='h',cl=0;function cr(){$('#cgt').textContent=C[ck][0][cl];$('#cct').textContent=C[ck][1][cl];$('#cterm').textContent=cl?'Longo prazo':'Curto prazo';$$('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c==ck))}
+$$('[data-c]').forEach(b=>b.onclick=()=>{ck=b.dataset.c;cr()});$('#cterm').onclick=()=>{cl=1-cl;cr()};cr();
+
+/* ===== transição entre telas ===== */
+function wipe(t){const w=$('#wipe');w.className='';w.innerHTML=t?'<span class="hd hl">☢ '+t+'</span>':'';void w.offsetWidth;w.className=t?'big':'sm'}
+/* ===== reator 3D (three.js) ===== */
+(function(){const h=$('#rx3');if(!h||!window.THREE)return;const T=THREE;
+const D={est:['Estrutura','Edifício e blindagem do reator. No RBMK, o núcleo não tinha a contenção completa de alta pressão de muitos reatores ocidentais.'],nuc:['Núcleo de grafite','Blocos de grafite (moderador) desaceleram nêutrons e sustentam a fissão. O grafite pode queimar quando exposto ao ar, o que alimentou o incêndio.'],comb:['Combustível','Urânio levemente enriquecido em canais de pressão. A fissão gera calor e produtos radioativos como iodo-131 e césio-137.'],bar:['Barras de controle','Absorvem nêutrons para regular a potência. No RBMK, a ponta de grafite podia aumentar a reatividade no início da inserção (INSAG-7).'],ref:['Refrigeração','Água circula nos canais retirando calor. Se ela ferve ou falta, a reatividade e a temperatura mudam.'],vap:['Vapor e turbina','A água ferve nos canais e o vapor segue para separadores e turbinas. Em baixa potência, mais vapor aumentava a reatividade (coeficiente de vazio positivo).']};
+const r=new T.WebGLRenderer({antialias:true,alpha:true});h.appendChild(r.domElement);
+const sc=new T.Scene(),cam=new T.PerspectiveCamera(40,1,.1,100);cam.position.set(8,5,10);cam.lookAt(0,0,0);
+sc.add(new T.AmbientLight(0xffffff,.6));const L=new T.PointLight(0xffd400,1.4,50);L.position.set(5,8,6);sc.add(L);
+const G=new T.Group();sc.add(G);const M={},rods=[],puffs=[];
+function A(k,g,c,p,o,rz){const m=new T.Mesh(g,new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.15,transparent:o<1,opacity:o}));m.position.set(p[0],p[1],p[2]);if(rz)m.rotation.z=rz;m.userData.p=k;G.add(m);(M[k]=M[k]||[]).push(m);return m}
+A('est',new T.BoxGeometry(6,5.4,6),0x8a8a8a,[0,0,0],.1).material.wireframe=true;
+A('nuc',new T.CylinderGeometry(2.3,2.3,2.8,32),0x3a3a3a,[0,-.4,0],.85);
+for(let x=-1.5;x<=1.5;x+=.75)for(let z=-1.5;z<=1.5;z+=.75)if(x*x+z*z<=5)A('comb',new T.CylinderGeometry(.1,.1,3.6,8),0x39ff88,[x,-.3,z],1);
+[[-.375,-.375],[.375,.375],[-.375,.375],[.375,-.375]].forEach(q=>{const m=A('bar',new T.CylinderGeometry(.07,.07,3,8),0xffffff,[q[0],1.6,q[1]],1);m.userData.b=1.6;rods.push(m)});
+A('ref',new T.TorusGeometry(2.5,.14,8,48),0x4aa3ff,[0,-2.2,0],1).rotation.x=Math.PI/2;
+A('vap',new T.CylinderGeometry(.16,.16,3.6,12),0xcccccc,[1.8,2.6,0],1,Math.PI/2);A('vap',new T.CylinderGeometry(.55,.55,3,16),0xcccccc,[4,2.6,0],1,Math.PI/2);
+for(let n=0;n<14;n++){const m=A('vap',new T.SphereGeometry(.1,8,8),0xffffff,[Math.random()*2-1,-1+Math.random()*3.5,Math.random()*2-1],.7);puffs.push(m)}
+function sel(k){$('#rxt').textContent=D[k][0];$('#rxx').textContent=D[k][1];for(const q in M)M[q].forEach(m=>m.material.emissiveIntensity=q==k?.9:.15)}
+const rc=new T.Raycaster(),v=new T.Vector2();
+r.domElement.addEventListener('pointerdown',e=>{const b=r.domElement.getBoundingClientRect();v.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1);rc.setFromCamera(v,cam);const hs=rc.intersectObjects(G.children),x=hs.find(q=>q.object.userData.p!='est')||hs[0];if(x)sel(x.object.userData.p)});
+let sim=0,st0=0,t=0,b1=0,b2=0,AX;const deb=[],CAP=[[0,'1 · TESTE: a potência cai e o reator fica instável.'],[150,'2 · AUMENTO DE POTÊNCIA: o combustível aquece rapidamente.'],[270,'3 · DANOS: canais rompem e o vapor se acumula.'],[340,'4 · EXPLOSÕES: a estrutura superior é projetada para cima.'],[440,'5 · INCÊNDIO: o grafite exposto queima.'],[520,'6 · LIBERAÇÃO: material radioativo sobe com a fumaça e se dispersa.']];
+function ax(){AX=AX||new(window.AudioContext||window.webkitAudioContext)();if(AX.state=='suspended')AX.resume();return AX}
+function clk(){try{const a=ax(),o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=1800+Math.random()*900;g.gain.value=.04;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.012)}catch(e){}}
+function bang(){try{const a=ax(),d=a.sampleRate*2.5,b=a.createBuffer(1,d,a.sampleRate),q=b.getChannelData(0);for(let n=0;n<d;n++)q[n]=(Math.random()*2-1)*Math.pow(1-n/d,2.2);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=700;g.gain.value=1.2;s.connect(f);f.connect(g);g.connect(a.destination);s.start();const o=a.createOscillator(),og=a.createGain();o.frequency.setValueAtTime(90,a.currentTime);o.frequency.exponentialRampToValueAtTime(25,a.currentTime+1.5);og.gain.setValueAtTime(.8,a.currentTime);og.gain.exponentialRampToValueAtTime(.001,a.currentTime+1.6);o.connect(og);og.connect(a.destination);o.start();o.stop(a.currentTime+1.7)}catch(e){}}
+function sp(c,v){const m=A('vap',new T.SphereGeometry(.12,6,6),c,[(Math.random()-.5)*1.6,1.2,(Math.random()-.5)*1.6],.95);m.material.emissiveIntensity=.9;m.userData.v=v;deb.push(m)}
+function boom(){for(let n=0;n<40;n++)sp(n%3?0xff6a00:0xffd400,[(Math.random()-.5)*.14,.08+Math.random()*.16,(Math.random()-.5)*.14])}
+function rst(){deb.splice(0).forEach(m=>{G.remove(m);M.vap=M.vap.filter(q=>q!=m)});const g=new T.Color(0x39ff88);M.comb.forEach(m=>{m.material.color.copy(g);m.material.emissive.copy(g)});G.position.set(0,0,0);L.intensity=1.4;M.est[0].visible=true;$('#sim').textContent='▶ Simular acidente'}
+function step(){const s=(t-st0)*.3;let c=CAP[0][1];CAP.forEach(q=>{if(s>=q[0])c=q[1]});$('#rxt').textContent='SIMULAÇÃO DIDÁTICA';$('#rxx').textContent=c;
+const k=Math.min(1,Math.max(0,(s-150)/190)),col=new T.Color(0x39ff88).lerp(new T.Color(0xff3b30),k);
+rods.forEach(m=>m.position.y=m.userData.b-Math.min(s,150)*.01);M.comb.forEach(m=>{m.material.color.copy(col);m.material.emissive.copy(col)});
+puffs.forEach(m=>{m.position.y+=(.03+k*.12)*.3;if(m.position.y>2.6)m.position.y=-1.2});G.position.x=s<340?Math.sin(s)*.05*k:0;if(Math.random()<k*.2)clk();
+if(!b1&&s>=340){b1=1;boom();L.intensity=7;bang()}if(!b2&&s>=400){b2=1;boom();L.intensity=7;bang()}if(s>340){L.intensity=Math.max(2,L.intensity-.03);M.est[0].visible=false}
+if(s>440&&t%10==0)sp(0xff6a00,[(Math.random()-.5)*.02,.05+Math.random()*.05,(Math.random()-.5)*.02]);
+deb.forEach(m=>{const v=m.userData.v;m.position.x+=v[0]*.3;m.position.y+=v[1]*.3;m.position.z+=v[2]*.3;if(s<440)v[1]-=.0006});
+if(s>800){sim=0;rst();sel('nuc')}}
+$('#sim').onclick=()=>{if(sim){sim=0;rst();sel('nuc');return}rst();ax();sim=1;st0=t;b1=b2=0;$('#sim').textContent='■ Parar'};
+sel('nuc');(function f(){requestAnimationFrame(f);const w=h.clientWidth,hh=h.clientHeight;if(!w||!hh)return;if(r._w!=w||r._h!=hh){r.setSize(w,hh);cam.aspect=w/hh;cam.updateProjectionMatrix();r._w=w;r._h=hh}
+t++;G.rotation.y=t*.004;if(sim)step();else{rods.forEach((m,j)=>m.position.y=m.userData.b+Math.sin(t/40+j)*.35);puffs.forEach(m=>{m.position.y+=.03;if(m.position.y>2.6)m.position.y=-1.2})}r.render(sc,cam)})()})();
+/* ===== escala de dose (log) ===== */
+(function(){const Z=[['Raio-X',.1,'≈ 0,1 mSv','Dose típica de uma radiografia de tórax; o benefício clínico supera o risco.'],['Natural',2.4,'≈ 2,4 mSv/ano','Média mundial da radiação natural: solo, raios cósmicos, radônio e alimentos (UNSCEAR).'],['Público',1,'1 mSv/ano','Limite anual recomendado para o público, além do natural e do médico (ICRP).'],['Ocupac.',20,'20 mSv/ano','Média em 5 anos para trabalhadores expostos (ICRP).'],['Agudos',1000,'≳ 1 Sv (1 Gy)','Doses desse porte em pouco tempo podem causar síndrome aguda de radiação.']];
+const L=m=>Math.min(90,(Math.log10(m)-Math.log10(.05))/(Math.log10(2000)-Math.log10(.05))*100);
+$('#ds').innerHTML='<div style="position:absolute;left:0;right:0;top:12px;height:2px;background:var(--ln)"></div>'+Z.map((z,j)=>`<button class="chip clk" data-j="${j}" style="position:absolute;left:${L(z[1])}%;top:24px;transform:translateX(-50%);color:var(--t);font:inherit">${z[0]}</button>`).join('');
+$$('#ds button').forEach(b=>b.onclick=()=>{const z=Z[+b.dataset.j];$('#di').innerHTML='<h3>'+z[0]+' · '+z[2]+'</h3>'+z[3];$$('#ds button').forEach(x=>x.style.borderColor=x==b?'#ffd400':'')})})();
+/* ===== som Geiger (tecla G) ===== */
+(function(){let ac,on=0;function tk(){if(!on)return;const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=1800+Math.random()*900;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.012);setTimeout(tk,30+Math.random()*350)}
+addEventListener('keydown',e=>{if(e.key=='g'||e.key=='G'){ac=ac||new AudioContext();on=!on;tk()}})})();
+show(0);
+</script>
+</body>
+</html>
